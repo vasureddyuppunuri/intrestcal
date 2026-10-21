@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="description" content="InterestMate — Accurate personal loan tracker, deterministic interest calculator, and promise bond manager.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>InterestMate</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="app">
+  <!-- ═══ Top Header (Direct from Attached Reference Image) ═══ -->
+  <header class="top-header">
+    <div class="user-avatar-btn" id="header-avatar" onclick="App.openAccountModal()" title="Local Account Profile">
+      <span class="avatar-initials">IM</span>
+    </div>
+
+    <div class="header-right-actions">
+      <!-- Language Selector Pill Button -->
+      <button class="lang-selector-pill" id="btn-lang-selector" onclick="App.openLanguageModal()" aria-label="Select Language" title="Change Language">
+        <span class="material-symbols-outlined" style="font-size:16px;">translate</span>
+        <span class="current-lang-code" id="header-lang-code">EN</span>
+      </button>
+
+      <!-- Glassmorphic Bell Icon -->
+      <button class="icon-circle-glass" onclick="App.openAccountModal()" aria-label="Notifications" title="Notifications">
+        <span class="material-symbols-outlined" style="font-size:20px;">notifications</span>
+        <span class="bell-badge-dot" id="bell-dot" style="display:none"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ Toast Container ═══ -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       DASHBOARD PAGE (Exact Style from Attached Reference Image)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="page active" id="page-dashboard">
+
+    <!-- ═══ Balance Hero & Stacked Neon Lime Card ═══ -->
+    <div class="wallet-hero-section">
+      <div class="hero-balance-block">
+        <div class="balance-meta-label" id="hero-balance-label" data-i18n="myBalance">Balance</div>
+        <div class="balance-mega-amount" id="dash-mega-balance">₹0.00</div>
+      </div>
+
+      <!-- Lime Green Card Layered Stack & Carousel (Populated dynamically when user data exists) -->
+      <div class="neon-card-container" id="neon-card-container">
+        <!-- Visual Layered Card Depth Backdrops -->
+        <div class="card-stack-layer card-stack-layer-back" id="card-stack-back" style="display:none;"></div>
+        <div class="card-stack-layer card-stack-layer-mid" id="card-stack-mid" style="display:none;"></div>
+
+        <div class="neon-cards-track" id="neon-cards-track" onscroll="App.onNeonScroll(this)">
+          <!-- Rendered dynamically by App.renderNeonCards() -->
+        </div>
+
+        <!-- Carousel Pagination Dots -->
+        <div class="carousel-dots-row" id="neon-carousel-dots" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ═══ 3-Button Action Pills Row (Direct from Attached Reference Image) ═══ -->
+    <div class="hero-actions-triple-row">
+      <button class="hero-action-pill" onclick="App.openCreateLoan()" aria-label="Lend Money">
+        <span class="material-symbols-outlined action-icon">arrow_outward</span>
+        <span class="action-label" data-i18n="moneyLent">Lend</span>
+      </button>
+
+      <button class="hero-action-circle" onclick="App.navigate('calculator')" aria-label="Calculate Interest" title="Interest Calculator">
+        <span class="material-symbols-outlined">swap_vert</span>
+      </button>
+
+      <button class="hero-action-pill" onclick="App.filterAndNavigateLoans('borrowed')" aria-label="Borrow Money">
+        <span class="material-symbols-outlined action-icon" style="transform: rotate(90deg);">arrow_outward</span>
+        <span class="action-label" data-i18n="moneyBorrowed">Borrow</span>
+      </button>
+    </div>
+
+    <!-- Categories & Balances -->
+    <div class="accounts-section">
+      <div class="accounts-header-row" onclick="App.navigate('loans')">
+        <h3 class="accounts-title" data-i18n="accountsHeader">Categories & Balances</h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
+
+      <div class="accounts-cards-stack">
+        <!-- Money Lent Card (Chequing style) -->
+        <div class="account-card" onclick="App.filterAndNavigateLoans('lent')">
+          <div class="account-icon-box blue-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="5" width="20" height="14" rx="2"/>
+              <line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+          </div>
+          <div class="account-details">
+            <div class="account-name" data-i18n="moneyLent">Money Lent</div>
+            <div class="account-subtitle">
+              <span id="stat-lent-count">0 active loans</span> • <span id="stat-lent-interest-sub" style="color:#16A34A; font-weight:700;">+₹0.00 came</span>
+            </div>
+          </div>
+          <div class="account-amount" id="stat-lent-amount">₹0.00</div>
+          <svg class="account-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+
+        <!-- Money Borrowed Card (Savings style) -->
+        <div class="account-card" onclick="App.filterAndNavigateLoans('borrowed')">
+          <div class="account-icon-box green-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0016.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 002 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+            </svg>
+          </div>
+          <div class="account-details">
+            <div class="account-name" data-i18n="moneyBorrowed">Money Borrowed</div>
+            <div class="account-subtitle">
+              <span id="stat-borrowed-count">0 active loans</span> • <span id="stat-borrowed-interest-sub" style="color:#DC2626; font-weight:700;">-₹0.00 to pay</span>
+            </div>
+          </div>
+          <div class="account-amount" id="stat-borrowed-amount">₹0.00</div>
+          <svg class="account-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+
+        <!-- Interest Came (from money lent) -->
+        <div class="account-card" onclick="App.filterAndNavigateLoans('lent')">
+          <div class="account-icon-box" style="background:#DCFCE7; color:#15803D; width:44px; height:44px; border-radius:14px; display:grid; place-items:center;">
+            <span class="material-symbols-outlined" style="font-size:22px;">trending_up</span>
+          </div>
+          <div class="account-details">
+            <div class="account-name">Interest Came (Earned)</div>
+            <div class="account-subtitle">From money lent to others</div>
+          </div>
+          <div class="account-amount" id="stat-interest-came" style="color:#16A34A; font-weight:800;">+₹0.00</div>
+          <svg class="account-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+
+        <!-- Interest to Pay (when borrowed) -->
+        <div class="account-card" onclick="App.filterAndNavigateLoans('borrowed')">
+          <div class="account-icon-box" style="background:#FEE2E2; color:#DC2626; width:44px; height:44px; border-radius:14px; display:grid; place-items:center;">
+            <span class="material-symbols-outlined" style="font-size:22px;">trending_down</span>
+          </div>
+          <div class="account-details">
+            <div class="account-name">Interest to Pay (Owed)</div>
+            <div class="account-subtitle">When borrowed from others</div>
+          </div>
+          <div class="account-amount" id="stat-interest-to-pay" style="color:#DC2626; font-weight:800;">-₹0.00</div>
+          <svg class="account-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+
+        <!-- Settled Loans Card -->
+        <div class="account-card" onclick="App.filterAndNavigateLoans('settled')">
+          <div class="account-icon-box amber-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div class="account-details">
+            <div class="account-name" data-i18n="settledLoans">Settled Loans</div>
+            <div class="account-subtitle" id="stat-settled-count">0 fully paid</div>
+          </div>
+          <div class="account-amount" id="stat-settled-amount">0</div>
+          <svg class="account-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Recent Loans (Image 1 Travel Card Visual Style) -->
+    <div class="section-heading-row">
+      <h3 class="section-title-text" data-i18n="recentLoans">Recent Loans</h3>
+      <button class="see-all-text-btn" onclick="App.navigate('loans')" data-i18n="viewAll">View all</button>
+    </div>
+    <div id="dashboard-recent-loans" class="recent-loans-stack">
+      <!-- When empty, clean empty state with NO mock data -->
+      <div class="empty-state-card">
+        <div class="empty-icon-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="9" y1="21" x2="9" y2="9"/>
+          </svg>
+        </div>
+        <h3 class="empty-title" data-i18n="noLoansYet">No loans added yet</h3>
+        <p class="empty-sub" data-i18n="noLoansDesc">Start by creating your first loan record or calculating interest.</p>
+        <button class="pill-primary-btn" onclick="App.openCreateLoan()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span data-i18n="createLoan">Create Loan</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="section-heading-row" id="activity-header" style="display:none; margin-top: 24px;">
+      <h3 class="section-title-text" data-i18n="recentActivity">Recent Activity</h3>
+    </div>
+    <div class="activity-card-container" id="dashboard-activity" style="display:none"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       CALCULATOR PAGE (Accurate, Fast, Step-by-Step Breakdown)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-calculator">
+    <div class="page-title" data-i18n="calculatorTitle">Interest Calculator</div>
+    <div class="page-subtitle" data-i18n="calculatorSubtitle">Fast, accurate calculation with step-by-step breakdown</div>
+
+    <div class="calculator-form-card">
+      <div class="form-group">
+        <label class="form-label" data-i18n="principalAmount">Principal Amount</label>
+        <div class="input-prefix">
+          <span class="prefix">₹</span>
+          <input type="number" class="form-input" id="calc-principal" placeholder="Enter principal amount (₹)" inputmode="numeric" oninput="App.onLiveCalculate()">
+        </div>
+        <!-- Quick 1-Tap Amount Presets -->
+        <div class="preset-buttons-row">
+          <button type="button" class="preset-chip-btn" onclick="App.addCalcAmount(10000)">+ ₹10K</button>
+          <button type="button" class="preset-chip-btn" onclick="App.addCalcAmount(50000)">+ ₹50K</button>
+          <button type="button" class="preset-chip-btn" onclick="App.addCalcAmount(100000)">+ ₹1 Lakh</button>
+          <button type="button" class="preset-chip-btn" onclick="App.addCalcAmount(500000)">+ ₹5 Lakh</button>
+          <button type="button" class="preset-chip-btn clear-btn" onclick="App.setCalcAmount(0)">Clear</button>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-i18n="interestRate">Interest Rate</label>
+          <div class="input-suffix">
+            <input type="number" class="form-input" id="calc-rate" placeholder="e.g. 2" step="0.01" inputmode="decimal" oninput="App.onLiveCalculate()">
+            <span class="suffix">%</span>
+          </div>
+          <!-- Quick 1-Tap Rate Presets -->
+          <div class="preset-buttons-row">
+            <button type="button" class="preset-chip-btn" onclick="App.setCalcRate(1)">1% (₹1)</button>
+            <button type="button" class="preset-chip-btn" onclick="App.setCalcRate(1.5)">1.5%</button>
+            <button type="button" class="preset-chip-btn" onclick="App.setCalcRate(2)">2% (₹2)</button>
+            <button type="button" class="preset-chip-btn" onclick="App.setCalcRate(3)">3%</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="ratePeriod">Rate Period</label>
+          <select class="form-select" id="calc-rate-period" onchange="App.onLiveCalculate()">
+            <option value="monthly" selected data-i18n="monthly">Monthly (Vaddi)</option>
+            <option value="annual" data-i18n="annual">Annual</option>
+            <option value="daily" data-i18n="daily">Daily</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" data-i18n="interestMethod">Interest Method</label>
+        <select class="form-select" id="calc-method" onchange="App.onMethodChanged()">
+          <option value="simple" selected data-i18n="simpleInterest">Simple Interest</option>
+          <option value="compound" data-i18n="compoundInterest">Compound Interest</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-i18n="startDate">Start Date</label>
+          <input type="date" class="form-input" id="calc-start" onchange="App.onLiveCalculate()">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="endDate">Calculation Date</label>
+          <input type="date" class="form-input" id="calc-end" onchange="App.onLiveCalculate()">
+        </div>
+      </div>
+
+      <!-- Quick 1-Tap Duration Presets -->
+      <div class="preset-buttons-row" style="margin-top:-6px; margin-bottom:14px;">
+        <button type="button" class="preset-chip-btn" onclick="App.setCalcDurationMonths(1)">1 Month</button>
+        <button type="button" class="preset-chip-btn" onclick="App.setCalcDurationMonths(3)">3 Months</button>
+        <button type="button" class="preset-chip-btn" onclick="App.setCalcDurationMonths(6)">6 Months</button>
+        <button type="button" class="preset-chip-btn" onclick="App.setCalcDurationMonths(12)">1 Year</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" data-i18n="dayCount">Day-Count Convention</label>
+        <select class="form-select" id="calc-daycount" onchange="App.onLiveCalculate()">
+          <option value="actual/365" selected>Actual / 365 (Standard)</option>
+          <option value="30/360">30 / 360 (Traditional Month)</option>
+          <option value="actual/360">Actual / 360</option>
+          <option value="actual/actual">Actual / Actual</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="calc-compound-group" style="display:none">
+        <label class="form-label" data-i18n="compoundingFreq">Compounding Frequency</label>
+        <select class="form-select" id="calc-compound-freq" onchange="App.onLiveCalculate()">
+          <option value="monthly" selected data-i18n="monthly">Monthly</option>
+          <option value="quarterly" data-i18n="quarterly">Quarterly</option>
+          <option value="half-yearly" data-i18n="halfYearly">Half-Yearly</option>
+          <option value="annual" data-i18n="annual">Annual</option>
+          <option value="daily" data-i18n="daily">Daily</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary btn-full mt-lg" id="btn-calculate" onclick="App.calculate()">
+        <span class="material-symbols-outlined" style="font-size:20px; margin-right:6px;">calculate</span>
+        <span data-i18n="calculateBtn">Calculate Interest</span>
+      </button>
+    </div>
+
+    <!-- Live Calculation Result Card -->
+    <div id="calc-result-area" class="mt-lg"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       LOANS PAGE
+       ════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-loans">
+    <div class="page-title" data-i18n="navLoans">Loans</div>
+    <div class="page-subtitle" data-i18n="loansSubtitle">Manage all personal loan records</div>
+
+    <!-- Search with Filter Button -->
+    <div class="hero-search-container">
+      <div class="search-pill-input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" placeholder="Search loans..." id="loan-search" data-i18n-placeholder="searchPlaceholder" oninput="App.filterLoans()">
+      </div>
+    </div>
+
+    <div class="pill-category-scroll" id="loan-filters">
+      <button class="category-pill active" data-filter="all" onclick="App.setLoanFilter('all', this)" data-i18n="filterAll">All</button>
+      <button class="category-pill" data-filter="draft" onclick="App.setLoanFilter('draft', this)" data-i18n="filterDraft">Draft</button>
+      <button class="category-pill" data-filter="active" onclick="App.setLoanFilter('active', this)" data-i18n="filterActive">Active</button>
+      <button class="category-pill" data-filter="closed-settled" onclick="App.setLoanFilter('closed-settled', this)" data-i18n="filterSettled">Settled</button>
+      <button class="category-pill" data-filter="closed-outstanding" onclick="App.setLoanFilter('closed-outstanding', this)" data-i18n="filterOutstanding">Outstanding</button>
+    </div>
+
+    <div id="loans-list" class="loans-stack-container"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       LOAN DETAIL PAGE
+       ════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-loan-detail">
+    <button class="detail-back-btn" onclick="App.navigate('loans')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      <span data-i18n="backToLoans">Back to Loans</span>
+    </button>
+    <div id="loan-detail-content"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       BONDS PAGE (Promise Bond Documents)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-bonds">
+    <div class="page-title" data-i18n="navBonds">Promise Bonds</div>
+    <div class="page-subtitle" data-i18n="bondsSubtitle">Attached legal promise bonds and receipts across loans</div>
+
+    <div class="hero-search-container">
+      <div class="search-pill-input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" placeholder="Search documents..." id="bond-search" data-i18n-placeholder="searchDocs" oninput="App.filterBonds()">
+      </div>
+    </div>
+
+    <div id="bonds-list" class="bonds-stack-container"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       SETTINGS PAGE
+       ════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-more">
+    <div class="page-title" data-i18n="settingsTitle">Settings</div>
+    <div class="page-subtitle" data-i18n="settingsSubtitle">Preferences, language, and backup</div>
+
+    
+
+    <div class="settings-list">
+      <!-- Local Account Management Item -->
+      <div class="settings-item" onclick="App.openAccountModal()">
+        <div class="settings-icon blue">
+          <span class="material-symbols-outlined">manage_accounts</span>
+        </div>
+        <div class="settings-info">
+          <div class="settings-label" data-i18n="accountOption">My Local Accounts</div>
+          <div class="settings-desc" id="settings-account-name">Tap to set up account</div>
+        </div>
+      </div>
+
+      <!-- Language Picker Item -->
+      <div class="settings-item" onclick="App.openLanguageModal()">
+        <div class="settings-icon purple">
+          <span class="material-symbols-outlined">translate</span>
+        </div>
+        <div class="settings-info">
+          <div class="settings-label" data-i18n="languageOption">Language Selection</div>
+          <div class="settings-desc current-lang-text">English</div>
+        </div>
+        <span class="settings-badge current-lang-code">EN</span>
+        <span class="material-symbols-outlined settings-chevron">chevron_right</span>
+      </div>
+
+      <!-- Transactions Item -->
+      <div class="settings-item" onclick="App.navigate('transactions')">
+        <div class="settings-icon blue">
+          <span class="material-symbols-outlined">payments</span>
+        </div>
+        <div class="settings-info">
+          <div class="settings-label" data-i18n="allTransactions">All Transactions</div>
+          <div class="settings-desc">Complete repayment history</div>
+        </div>
+        <span class="material-symbols-outlined settings-chevron">chevron_right</span>
+      </div>
+
+      <!-- Audit Trail Item -->
+      <div class="settings-item" onclick="App.navigate('audit')">
+        <div class="settings-icon amber">
+          <span class="material-symbols-outlined">history</span>
+        </div>
+        <div class="settings-info">
+          <div class="settings-label" data-i18n="auditTrail">Audit Trail</div>
+          <div class="settings-desc">Tamper-evident activity logs</div>
+        </div>
+        <span class="material-symbols-outlined settings-chevron">chevron_right</span>
+      </div>
+
+      <!-- Export Data (Backup to phone) -->
+      <div class="settings-item" onclick="App.exportData()">
+        <div class="settings-icon green">
+          <span class="material-symbols-outlined">download</span>
+        </div>
+        <div class="settings-info">
+          <div class="settings-label" data-i18n="exportData">Backup Data</div>
+          <div class="settings-desc">Save offline backup file</div>
+        </div>
+        <span class="material-symbols-outlined settings-chevron">chevron_right</span>
+      </div>
+
+      <!-- Import Data (Restore from phone) -->
+      <div class="settings-item" onclick="document.getElementById('import-file-input').click()">
+        <div class="settings-icon purple">
+          <span class="material-symbols-outlined">upload_file</span>
+        </div>
+        <div class="settings-info">
+          <div class="settings-label">Restore Backup</div>
+          <div class="settings-desc">Select backup file to restore</div>
+        </div>
+        <span class="material-symbols-outlined settings-chevron">chevron_right</span>
+      </div>
+      <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="App.importDataFile(event)">
+
+      <!-- About App -->
+      <div class="settings-item" onclick="App.showAbout()">
+        <div class="settings-icon gray">
+          <span class="material-symbols-outlined">info</span>
+        </div>
+        <div class="settings-info">
+          <div class="settings-label" data-i18n="aboutApp">About InterestMate</div>
+          <div class="settings-desc" data-i18n="versionInfo">Version 1.2 (Deterministic Engine)</div>
+        </div>
+        <span class="material-symbols-outlined settings-chevron">chevron_right</span>
+      </div>
+    </div>
+
+    <div class="text-center mt-2xl">
+      <p class="text-muted" style="font-size:12px;" data-i18n="appName">InterestMate</p>
+      <p class="text-muted" style="font-size:11px; margin-top:4px;" data-i18n="legalNotice">Private recordkeeping tool with paise accuracy.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       TRANSACTIONS PAGE
+       ════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-transactions">
+    <button class="detail-back-btn" onclick="App.navigate('more')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Back</span>
+    </button>
+    <div class="page-title" data-i18n="allTransactions">Transactions</div>
+    <div class="page-subtitle">All recorded payments & reversals</div>
+    <div id="transactions-list"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       AUDIT PAGE
+       ════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-audit">
+    <button class="detail-back-btn" onclick="App.navigate('more')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Back</span>
+    </button>
+    <div class="page-title" data-i18n="auditTrail">Audit Trail</div>
+    <div class="page-subtitle">Traceable chronological event history</div>
+    <div id="audit-list"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       FLOATING DARK CAPSULE BOTTOM DOCK (Direct from Image 1)
+       ════════════════════════════════════════════════════════════ -->
+  <nav class="floating-capsule-nav" id="capsule-nav">
+    <button class="capsule-nav-item active" data-page="dashboard" onclick="App.navigate('dashboard')" aria-label="Home" title="Home">
+      <span class="material-symbols-outlined">home</span>
+    </button>
+    <button class="capsule-nav-item" data-page="calculator" onclick="App.navigate('calculator')" aria-label="Calculator" title="Calculator">
+      <span class="material-symbols-outlined">calculate</span>
+    </button>
+    <!-- Center Hero 3D Plus Button -->
+    <button class="capsule-nav-center-fab" id="main-fab" onclick="App.openCreateLoan()" aria-label="Create Loan" title="Create Loan">
+      <span class="material-symbols-outlined">add</span>
+    </button>
+    <button class="capsule-nav-item" data-page="loans" onclick="App.navigate('loans')" aria-label="Loans" title="Loans">
+      <span class="material-symbols-outlined">receipt_long</span>
+    </button>
+    <button class="capsule-nav-item" data-page="more" onclick="App.navigate('more')" aria-label="Settings" title="Settings">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
+  </nav>
+
+  <!-- ═══ Modal Overlay ═══ -->
+  <div class="modal-overlay" id="modal-overlay" onclick="App.closeModal()"></div>
+
+  <!-- ═══ Modal Sheet ═══ -->
+  <div class="modal-sheet" id="modal-sheet" style="display:none">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h2 id="modal-title">Modal</h2>
+      <button class="icon-btn-rounded" onclick="App.closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+
+  <!-- ═══ Confirm / Alert Dialog ═══ -->
+  <div class="modal-overlay" id="confirm-overlay" onclick="App.closeConfirm()" style="display:none"></div>
+  <div class="confirm-dialog" id="confirm-dialog" style="display:none">
+    <div class="confirm-icon-circle">
+      <span class="material-symbols-outlined" id="confirm-icon">warning_amber</span>
+    </div>
+    <h3 id="confirm-title" data-i18n="confirm">Confirm</h3>
+    <p id="confirm-message">Are you sure?</p>
+    <div class="dialog-actions">
+      <button class="btn btn-outline" id="confirm-cancel" onclick="App.closeConfirm()" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" id="confirm-ok" data-i18n="confirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/calculator.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/store.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
